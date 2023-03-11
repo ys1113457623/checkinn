@@ -46,3 +46,22 @@ export async function addRoom(formData) {
     return error;
   }
 }
+export async function addBooking(formData) {
+  try {
+    console.log(JSON.stringify(formData));
+    const Options = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    };
+
+    const response = await fetch(`${BASE_URL}api/bookings`, Options);
+    const json = await response.json();
+    console.log('done');
+
+    return json;
+  } catch (error) {
+    console.log('error');
+    return error;
+  }
+}

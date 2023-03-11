@@ -65,5 +65,3 @@ export class RoomService {
   //       .then((d) => d.data);
   //   }
 }
-
-import axios from 'axios';

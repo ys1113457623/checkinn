@@ -8,28 +8,19 @@ import { Calendar } from 'primereact/calendar';
 import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
-import { FileUpload } from 'primereact/fileupload';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
 import { MultiSelect } from 'primereact/multiselect';
 import { Toolbar } from 'primereact/toolbar';
-import { addRoom } from '../api/product/helper';
+import { addBooking, addRoom } from '../api/product/helper';
 
 import { classNames } from 'primereact/utils';
 
-import BookingsList from '@/components/BookingList';
-import React, { useEffect, useRef, useState } from 'react';
+import { BookingService } from '@/utils/BookingService';
+import { Axios } from 'axios';
+import React, { useEffect, useState } from 'react';
 
 const RoomManager = () => {
-  const listValue = [
-    { name: 'San Francisco', code: 'SF' },
-    { name: 'London', code: 'LDN' },
-    { name: 'Paris', code: 'PRS' },
-    { name: 'Istanbul', code: 'IST' },
-    { name: 'Berlin', code: 'BRL' },
-    { name: 'Barcelona', code: 'BRC' },
-    { name: 'Rome', code: 'RM' },
-  ];
   let emptyRoom = {
     roomNumber: '',
     roomType: '',
@@ -39,9 +30,9 @@ const RoomManager = () => {
     bookings: [],
   };
   let emptyBooking = {
-    user: null,
-    room: null,
-    checkIn: Date.now(),
+    user: '',
+    room: '',
+    checkIn: '',
     checkOut: null,
     totalPrice: 0,
   };
@@ -49,12 +40,11 @@ const RoomManager = () => {
   const [rooms, setRooms] = useState([]);
 
   const [dropdownValue, setDropdownValue] = useState(null);
-  const [roomType, setRoomType] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedRoomType, setSelectedRoomType] = useState('');
-  const [selectedRoomNumber, setSelectedRoomNumber] = useState('');
 
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [bookings, setBookings] = useState([]);
+
+  const [selectedRoomType, setSelectedRoomType] = useState('');
+
   const [users, setUsers] = useState([]);
   const [selectedUser2, setSelectedUser2] = useState(null);
   const [roomNumber, setRoomNumber] = useState(''); // set initial value to '123'
@@ -64,10 +54,13 @@ const RoomManager = () => {
 
   const [filteredValue, setFilteredValue] = useState(null);
   const [room, setRoom] = useState(emptyRoom);
-  const [selectedRooms, setSelectedRooms] = useState(null);
+
   const [roomDialog, setRoomDialog] = useState(false);
+  const [bookingDialog, setBookingDialog] = useState(false);
 
   const [submitted, setSubmitted] = useState(false);
+  const [submitted2, setSubmitted2] = useState(false);
+
   const [multiselectValue, setMultiselectValue] = useState(null);
 
   const [layout, setLayout] = useState('grid');
@@ -76,11 +69,10 @@ const RoomManager = () => {
   const [sortKey, setSortKey] = useState(null);
   const [globalFilterValue, setGlobalFilterValue] = useState('');
   const contextPath = getConfig().publicRuntimeConfig.contextPath;
-  const dt = useRef(null);
-  const toast = useRef(null);
+
   const [dialogVisible, setDialogVisible] = useState(false);
 
-  const handleItemClick = (data) => {
+  const handleItemClick = () => {
     setDialogVisible(!dialogVisible);
   };
 
@@ -91,13 +83,6 @@ const RoomManager = () => {
     const randomIndex = Math.floor(Math.random() * filteredRooms.length);
     return filteredRooms[randomIndex]?.roomNumber;
   }
-
-  const footer = (
-    <div>
-      <Button label="Cancel" icon="pi pi-times" onClick={handleItemClick} />
-      <Button label="Book" icon="pi pi-check" onClick={handleItemClick} />
-    </div>
-  );
 
   const sortOptions = [
     { label: 'Price High to Low', value: '!price' },
@@ -121,9 +106,7 @@ const RoomManager = () => {
     return value.replace(/[^\d]/g, '');
   };
   const multiselectValues = [{ name: 'Wifi' }, { name: 'AC' }, { name: 'TV' }];
-  const exportCSV = () => {
-    dt.current.exportCSV();
-  };
+
   // Fetch all rooms from the server on component mount
   useEffect(() => {
     // axios
@@ -140,6 +123,10 @@ const RoomManager = () => {
     setSubmitted(false);
     setRoomDialog(false);
   };
+  const hideDialog2 = () => {
+    setSubmitted2(false);
+    setBookingDialog(false);
+  };
 
   const createId = () => {
     let id = '';
@@ -151,16 +138,13 @@ const RoomManager = () => {
     return id;
   };
 
-  const findIndexById = (id) => {
-    let index = -1;
-    for (let i = 0; i < rooms.length; i++) {
-      if (rooms[i].id === id) {
-        index = i;
-        break;
-      }
+  const updateBooking = async (id, bookingData) => {
+    try {
+      const res = await Axios.put(`/api/booking/${id}`, bookingData);
+      return res.data;
+    } catch (error) {
+      throw new Error(error.response.data.message);
     }
-
-    return index;
   };
   const updateRoom = async (updatedRoom) => {
     try {
@@ -209,35 +193,41 @@ const RoomManager = () => {
     setRoom(emptyRoom);
   };
   const saveBooking = async () => {
-    setSubmitted(true);
+    console.log(booking);
+    setSubmitted2(true);
 
-    if (
-      room.roomNumber &&
-      rooms.some((r) => r.roomNumber === room.roomNumber)
-    ) {
-      // Room with this roomNumber already exists, update it
-      const updatedRooms = rooms.map((r) =>
-        r.roomNumber === room.roomNumber ? room : r
+    if (booking._id && bookings.some((b) => b._id === booking._id)) {
+      // Booking already exists, update it
+      const updatedBookings = bookings.map((b) =>
+        b._id === booking._id ? booking : b
       );
-      await updateRoom(room._id, room);
-      setRooms(updatedRooms);
+      await updateBooking(booking._id, booking);
+      setBookings(updatedBookings);
     } else {
-      // Room doesn't exist, create a new one
-      const newRoom = { ...room, id: createId() };
-      const names = multiselectValue.map((item) => item.name);
-      newRoom.amenities = names;
-      await addRoom(newRoom);
-      setRooms([...rooms, newRoom]);
+      // Booking doesn't exist, create a new one
+      const newBooking = { ...booking, id: createId() };
+      await addBooking(newBooking);
+      setBookings([...bookings, newBooking]);
     }
 
-    setRoomDialog(false);
-    setRoom(emptyRoom);
+    setBookingDialog(false);
+    setBooking(emptyBooking);
   };
+
+  const footer = (
+    <div>
+      <Button label="Cancel" icon="pi pi-times" onClick={handleItemClick} />
+      <Button label="Book" icon="pi pi-check" onClick={saveBooking} />
+    </div>
+  );
 
   useEffect(() => {
     const roomService = new RoomService();
+    const bookingService = new BookingService();
+
     const productService = new ProductService();
     roomService.getRooms().then((data) => setRooms(data));
+    bookingService.getBookings().then((data) => setBookings(data));
     productService.getProducts().then((data) => setUsers(data));
     setGlobalFilterValue('');
   }, []);
@@ -272,33 +262,44 @@ const RoomManager = () => {
     setSubmitted(false);
     setRoomDialog(true);
   };
-
-  const onInputChange = (e, name) => {
-    const val = (e.target && e.target.value) || '';
-    let _room = { ...room };
-    _room[`${name}`] = val;
-
-    setRoom(_room);
+  const openNew2 = () => {
+    setBooking(emptyBooking);
+    setSubmitted2(false);
+    setBookingDialog(true);
   };
 
-  const onDropDownChangeRoomType = (e, name) => {
-    let _room = { ...room };
-    _room['roomType'] = e.target.value.name;
-    setRoom(_room);
+  const onDropDownChangeBookingRoomType = (e) => {
+    let _booking = { ...booking };
+    // console.log(e.target);
+    _booking['roomType'] = e.target.value.id;
+    setBooking(_booking);
   };
 
-  const handleMultiselectChange = (e) => {
-    // Map the selected values to an object with the required format
-    const selectedValuesAsObjects = e.value.map((value) => ({
-      name: value,
-      // Add any other required properties to the object
-    }));
+  const checkInChange = (e) => {
+    let _booking = { ...booking };
+    console.log(e);
+    _booking['checkIn'] = e;
+    setBooking(_booking);
+  };
+  const checkOutChange = (e) => {
+    let _booking = { ...booking };
+    console.log(e);
+    _booking['checkOut'] = e;
+    setBooking(_booking);
+  };
+  const roomChange = (e) => {
+    let _booking = { ...booking };
+    console.log(e._id);
 
-    setSelectedValues(selectedValuesAsObjects);
+    _booking['room'] = e._id;
+    setBooking(_booking);
   };
 
-  const confirmDeleteSelected = () => {
-    setDeleteRoomsDialog(true);
+  const onDropDownChangeUser = (e) => {
+    let _booking = { ...booking };
+    console.log(e.target.value._id);
+    _booking['user'] = e.target.value._id;
+    setBooking(_booking);
   };
 
   const leftToolbarTemplate = () => {
@@ -311,40 +312,14 @@ const RoomManager = () => {
             className="p-button-success mr-2"
             onClick={openNew}
           />
+
           <Button
-            label="Delete"
-            icon="pi pi-trash"
+            label="Book"
             className="p-button-danger mr-2"
-            onClick={confirmDeleteSelected}
-            disabled={!selectedRooms || !selectedRooms.length}
-          />
-          <Button
-            label="Delete"
-            className="p-button-danger mr-2"
-            onClick={() => handleItemClick()}
+            onClick={openNew2}
             icon="pi pi-shopping-cart"
           />
         </div>
-      </React.Fragment>
-    );
-  };
-  const rightToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        <FileUpload
-          mode="basic"
-          accept="image/*"
-          maxFileSize={1000000}
-          label="Import"
-          chooseLabel="Import"
-          className="mr-2 inline-block"
-        />
-        <Button
-          label="Export"
-          icon="pi pi-upload"
-          className="p-button-help"
-          onClick={exportCSV}
-        />
       </React.Fragment>
     );
   };
@@ -361,27 +336,6 @@ const RoomManager = () => {
       setFilteredValue(filtered);
     }
   };
-
-  // Function to handle adding a new room
-  // const handleAddRoom = () => {
-  //   axios
-  //     .post('http://localhost:3000/api/rooms', {
-  //       roomNumber,
-  //       roomType,
-  //       price,
-  //       amenities,
-  //     })
-  //     .then((res) => {
-  //       setRooms([...rooms, res.data]);
-  //       setRoomNumber('');
-  //       setRoomType('');
-  //       setPrice('');
-  //       setAmenities([]);
-  //     })
-  //     .catch((err) => {
-  //       console.error(err);
-  //     });
-  // };
 
   const onSortChange = (event) => {
     const value = event.value;
@@ -466,8 +420,11 @@ const RoomManager = () => {
             ></Rating> */}
             <div className="flex flex-row flex-wrap">
               {data.amenities.length !== 0 ? (
-                data.amenities.map((amenity) => (
-                  <span className="p-tag p-tag-rounded p-tag-info m-1">
+                data.amenities.map((amenity, index) => (
+                  <span
+                    key={index}
+                    className="p-tag p-tag-rounded p-tag-info m-1"
+                  >
                     {amenity}
                   </span>
                 ))
@@ -486,6 +443,7 @@ const RoomManager = () => {
             <Button
               icon="pi pi-shopping-cart"
               label="Book"
+              onClick={saveBooking}
               disabled={data.isAvailable === false}
               className="mb-2 p-button-sm"
             ></Button>
@@ -558,8 +516,8 @@ const RoomManager = () => {
           <h5>DataView</h5>
           <Toolbar
             className="mb-4"
-            left={leftToolbarTemplate}
-            right={rightToolbarTemplate}
+            right={leftToolbarTemplate}
+            // right={rightToolbarTemplate}
           ></Toolbar>
           <DataView
             value={filteredValue || rooms}
@@ -605,7 +563,7 @@ const RoomManager = () => {
                 onChange={(e) => {
                   console.log(typeof e.target.value.name);
                   setDropdownValue(e.value);
-                  onDropDownChangeRoomType(e, 'name');
+                  onDropDownChangeBookingRoomType(e, 'name');
                 }}
                 options={dropdownValues}
                 optionLabel="name"
@@ -645,45 +603,50 @@ const RoomManager = () => {
             style={{ width: '450px', height: 'auto' }}
             modal
             className="p-fluid"
-            visible={dialogVisible}
+            visible={bookingDialog}
             footer={footer}
+            onHide={hideDialog2}
             header="Booking"
-            onHide={() => setDialogVisible(false)}
           >
             <div style={{ position: 'relative' }}>
               <div className="p-fluid border-0">
                 <div className="field">
                   <label htmlFor="selectUser ">Select User</label>
                   <Dropdown
-                    options={users.map((user) => ({
-                      name: user.first_name + ' ' + user.last_name,
-                    }))}
+                    options={users}
                     value={selectedUser2}
+                    className={classNames({
+                      'p-invalid': submitted2 && !booking.user,
+                    })}
                     onChange={(e) => {
+                      console.log(e.target.value._id);
                       setSelectedUser2(e.value);
-                      setSelectedUser(
-                        users.filter(
-                          (user) =>
-                            user.first_name + ' ' + user.last_name ===
-                            e.value.name
-                        )[0]
-                      );
+                      onDropDownChangeUser(e, 'user');
                     }}
-                    optionLabel="name"
+                    optionLabel={(user) =>
+                      user.first_name + ' ' + user.last_name
+                    }
                   />
                 </div>
                 <div className="field">
                   <label htmlFor="roomType">Room Type</label>
                   <Dropdown
                     value={dropdownValue}
-                    onSelectCapture={(e) => {
-                      setRoomNumber(getRandomRoomNumber());
+                    className={classNames({
+                      'p-invalid': submitted && !booking.roomType,
+                    })}
+                    onHide={() => {
+                      var a = getRandomRoomNumber();
+                      console.log('Yeh Dekh', typeof a);
+                      var b = rooms.filter((room) => room.roomNumber === a)[0];
+                      // console.log(typeof b);
+                      setRoomNumber(a);
+                      roomChange(b, 'room');
                     }}
-                    onClick={(e) => {
+                    onClick={() => {
                       setRoomNumber(getRandomRoomNumber());
                     }}
                     onChange={(e) => {
-                      console.log(typeof e.target.value.name);
                       setSelectedRoomType(e.value.name);
                       setDropdownValue(e.value);
                     }}
@@ -695,8 +658,19 @@ const RoomManager = () => {
                 <div className="field">
                   <label htmlFor="roomType">Room Number</label>
                   <InputText
+                    className={classNames({
+                      'p-invalid': submitted2 && !booking.room,
+                    })}
                     value={roomNumber}
-                    onChange={(e) => setRoomNumber(e.target.value)}
+                    onChange={(e) => {
+                      // roomNumberChange();
+                      // console.log(
+                      //   rooms.filter(
+                      //     (room) => room.roomNumber === e.target.value
+                      //   )[0]
+                      // )
+                      setRoomNumber(e.target.value);
+                    }}
                   />
                 </div>
                 <div className="field">
@@ -704,10 +678,17 @@ const RoomManager = () => {
                   <Calendar
                     showIcon
                     showButtonBar
+                    className={classNames({
+                      'p-invalid': submitted2 && !booking.checkIn,
+                    })}
                     value={checkInValue}
                     hourFormat="12"
                     showTime={true}
-                    onChange={(e) => setCheckInValue(e.value)}
+                    onChange={(e) => {
+                      console.log(e.value);
+                      checkInChange(e.value.toISOString());
+                      setCheckInValue(e.value);
+                    }}
                   ></Calendar>
                 </div>
                 <div className="field">
@@ -715,30 +696,23 @@ const RoomManager = () => {
                   <Calendar
                     showIcon
                     showButtonBar
+                    className={classNames({
+                      'p-invalid': submitted2 && !booking.checkOut,
+                    })}
                     value={checkOutValue}
                     onChange={(e) => {
                       setValue(
-                        ((checkOutValue - checkInValue) / (1000 * 60 * 60)) *
+                        (booking.checkIn - booking.checkIn / (1000 * 60 * 60)) *
                           rooms.filter(
                             (room) => room.roomNumber === roomNumber
                           )[0].price
                       );
+                      checkOutChange(e.value.toISOString());
                       setCheckOutValue(e.value);
                     }}
                     showTime={true}
                     hourFormat="12"
                   />
-
-                  {/* <Calendar
-                      showIcon
-                      showButtonBar
-                      showTime={true}
-                      hourFormat="24"
-                      dateFormat="dd/mm/yy"
-                      value={checkOutValue}
-                      timeOnly={true}
-                      onChange={(e) => setCheckOutValue(e.value)}
-                    ></Calendar> */}
                 </div>
               </div>
               <div className="p-field">
@@ -746,6 +720,9 @@ const RoomManager = () => {
                 <span className="p-input-icon-left">
                   <InputNumber
                     value={value}
+                    className={classNames({
+                      'p-invalid': submitted2 && !booking.price,
+                    })}
                     onValueChange={(e) => setValue(e.value)}
                     showButtons
                     mode="currency"
@@ -754,93 +731,14 @@ const RoomManager = () => {
                     format={currencyFormatter}
                     parse={currencyParser}
                   ></InputNumber>
-
-                  {/* <InputNumber
-                    id="currencyInput"
-                    value={value}
-                    onValueChange={(e) => setValue(e.value)}
-                    mode="currency"
-                    currency="INR"
-                    locale="en-US"
-                    placeholder="$0.00"
-                    minFractionDigits={2}
-                    showButtons
-                    buttonLayout="horizontal"
-                    suffix=".00"
-                    decimalSeparator="."
-                    thousandSeparator=","
-                    className="p-inputtext-lg"
-                    format={currencyFormatter}
-                    parse={currencyParser}
-                  /> */}
                 </span>
               </div>
-              <BookingsList />
             </div>
           </Dialog>
         </div>
       </div>
     </div>
   );
-
-  // return (
-  //   <div>
-  //     <h1>Room Manager</h1>
-
-  //     {/* Add a new room */}
-  //     <h2>Add a new room</h2>
-  //     <label htmlFor="roomNumber">Room number:</label>
-  //     <input
-  //       type="number"
-  //       id="roomNumber"
-  //       value={roomNumber}
-  //       onChange={(e) => setRoomNumber(e.target.value)}
-  //     />
-  //     <br />
-  //     <label htmlFor="roomType">Room type:</label>
-  //     <select
-  //       id="roomType"
-  //       value={roomType}
-  //       onChange={(e) => setRoomType(e.target.value)}
-  //     >
-  //       <option value="">Select a room type</option>
-  //       <option value="Single">Single</option>
-  //       <option value="Double">Double</option>
-  //       <option value="Triple">Triple</option>
-  //       <option value="Suite">Suite</option>
-  //     </select>
-  //     <br />
-  //     <label htmlFor="price">Price per night:</label>
-  //     <input
-  //       type="number"
-  //       id="price"
-  //       value={price}
-  //       onChange={(e) => setPrice(e.target.value)}
-  //     />
-  //     <br />
-  //     <label htmlFor="amenities">Amenities:</label>
-  //     <input
-  //       type="text"
-  //       id="amenities"
-  //       value={amenities}
-  //       onChange={(e) => setAmenities(e.target.value.split(','))}
-  //     />
-  //     <br />
-  //     <button onClick={handleAddRoom}>Add room</button>
-
-  //     {/* List all rooms */}
-  //     <h2>All rooms</h2>
-  //     <ul>
-  //       {rooms.map((room) => (
-  //         <li key={room._id}>
-  //           Room {room.roomNumber} - {room.roomType} - ${room.price}/night -
-  //           Amenities: {room.amenities.join(', ')}
-  //           <button onClick={() => handleDeleteRoom(room._id)}>Delete</button>
-  //         </li>
-  //       ))}
-  //     </ul>
-  //   </div>
-  // );
 };
 
 export default RoomManager;

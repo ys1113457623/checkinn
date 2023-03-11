@@ -1,5 +1,4 @@
 import getConfig from 'next/config';
-import { useReducer } from 'react';
 
 import { ProductService } from '@/utils/ProductService';
 import { Button } from 'primereact/button';
@@ -8,19 +7,12 @@ import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Rating } from 'primereact/rating';
 import { Toast } from 'primereact/toast';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import React, { useEffect, useRef, useState } from 'react';
 import validator from 'validator';
 import { addUser } from '../api/product/helper';
-const formReducer = (state, event) => {
-  return {
-    ...state,
-    [event.target.name]: event.target.value,
-  };
-};
 
 const Crud = () => {
   let emptyProduct = {
@@ -35,16 +27,17 @@ const Crud = () => {
     city: '',
     pincode: null,
   };
-  const [formData, setFormData] = useReducer(formReducer, {});
+  // const [formData, setFormData] = useReducer(formReducer, {});
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (Object.keys(formData).length == 0)
-      return console.log("Don't have Form Data");
-    console.log(formData);
-  };
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   if (Object.keys(formData).length == 0)
+  //     return console.log("Don't have Form Data");
+  //   console.log(formData);
+  // };
 
-  const [message, setMessage] = useState(true);
+  const [message, setMessage] = useState(false);
+
   const validateEmail = (e) => {
     var email = e.target.value;
     if (validator.isEmail(email)) {
@@ -66,8 +59,7 @@ const Crud = () => {
   const dt = useRef(null);
   const contextPath = getConfig().publicRuntimeConfig.contextPath;
 
-  const [image, setImage] = useState(null);
-  console.log(image);
+  // const [image, setImage] = useState(null);
 
   useEffect(() => {
     const productService = new ProductService();
@@ -175,9 +167,9 @@ const Crud = () => {
     return id;
   };
 
-  const exportCSV = () => {
-    dt.current.exportCSV();
-  };
+  // const exportCSV = () => {
+  //   dt.current.exportCSV();
+  // };
 
   const confirmDeleteSelected = () => {
     setDeleteProductsDialog(true);
@@ -196,11 +188,11 @@ const Crud = () => {
     });
   };
 
-  const onCategoryChange = (e) => {
-    let _product = { ...product };
-    _product['category'] = e.value;
-    setProduct(_product);
-  };
+  // const onCategoryChange = (e) => {
+  //   let _product = { ...product };
+  //   _product['category'] = e.value;
+  //   setProduct(_product);
+  // };
 
   const onInputChange = (e, name) => {
     const val = (e.target && e.target.value) || '';
@@ -210,13 +202,13 @@ const Crud = () => {
     setProduct(_product);
   };
 
-  const onInputNumberChange = (e, name) => {
-    const val = e.value || 0;
-    let _product = { ...product };
-    _product[`${name}`] = val;
+  // const onInputNumberChange = (e, name) => {
+  //   const val = e.value || 0;
+  //   let _product = { ...product };
+  //   _product[`${name}`] = val;
 
-    setProduct(_product);
-  };
+  //   setProduct(_product);
+  // };
 
   const leftToolbarTemplate = () => {
     return (
@@ -240,14 +232,14 @@ const Crud = () => {
     );
   };
 
-  const codeBodyTemplate = (rowData) => {
-    return (
-      <>
-        <span className="p-column-title">Code</span>
-        {rowData.code}
-      </>
-    );
-  };
+  // const codeBodyTemplate = (rowData) => {
+  //   return (
+  //     <>
+  //       <span className="p-column-title">Code</span>
+  //       {rowData.code}
+  //     </>
+  //   );
+  // };
 
   const nameBodyTemplate = (rowData) => {
     return (
@@ -276,14 +268,14 @@ const Crud = () => {
     );
   };
 
-  const ratingBodyTemplate = (rowData) => {
-    return (
-      <>
-        <span className="p-column-title">Reviews</span>
-        <Rating value={rowData.rating} readOnly cancel={false} />
-      </>
-    );
-  };
+  // const ratingBodyTemplate = (rowData) => {
+  //   return (
+  //     <>
+  //       <span className="p-column-title">Reviews</span>
+  //       <Rating value={rowData.rating} readOnly cancel={false} />
+  //     </>
+  //   );
+  // };
 
   const statusBodyTemplate = (rowData) => {
     return (
@@ -459,34 +451,6 @@ const Crud = () => {
               />
             )}
 
-            <div className="formgrid grid">
-              <div className="field col">
-                <label htmlFor="name">First Name</label>
-                <InputText
-                  id="name"
-                  value={product.first_name}
-                  onChange={(e) => onInputChange(e, 'first_name')}
-                  required
-                  autoFocus
-                  className={classNames({
-                    'p-invalid': submitted && !product.name,
-                  })}
-                />
-              </div>
-              <div className="field col">
-                <label htmlFor="quantity">Last Name</label>
-                <InputText
-                  id="name"
-                  value={product.last_name}
-                  onChange={(e) => onInputChange(e, 'last_name')}
-                  required
-                  autoFocus
-                  className={classNames({
-                    'p-invalid': submitted && !product.name,
-                  })}
-                />
-              </div>
-            </div>
             <div className="formgrid grid">
               <div className="field col">
                 <label htmlFor="name">First Name</label>

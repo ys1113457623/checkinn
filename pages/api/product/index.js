@@ -39,7 +39,7 @@ const handler = nc()
     try {
       await guest.save();
       res.send('New Product Created');
-    } catch {
+    } catch (error) {
       console.error(error);
       res.status(500).send('Error creating product');
     }

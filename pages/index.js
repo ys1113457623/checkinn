@@ -1,13 +1,12 @@
-import getConfig from 'next/config';
-import Link from 'next/link';
+import { BookingService } from '@/utils/BookingService';
 import { Button } from 'primereact/button';
 import { Chart } from 'primereact/chart';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
+
 import { Menu } from 'primereact/menu';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { LayoutContext } from '../layout/context/layoutcontext';
-import { ProductService } from '../utils/ProductService';
 import { RoomService } from '../utils/RoomService';
 
 const lineData = {
@@ -33,20 +32,20 @@ const lineData = {
 };
 
 const Dashboard = () => {
-  const [products, setProducts] = useState('');
   const [rooms, setRooms] = useState('');
+  const [bookings, setBookings] = useState('');
+
   const menu1 = useRef(null);
   const menu2 = useRef(null);
   const [lineOptions, setLineOptions] = useState(null);
   const { layoutConfig } = useContext(LayoutContext);
-  const contextPath = getConfig().publicRuntimeConfig.contextPath;
-  useEffect(() => {
-    const productService = new ProductService();
-    productService.getProducts().then((data) => setProducts(data));
-  }, []);
   useEffect(() => {
     const roomService = new RoomService();
     roomService.getRooms().then((data) => setRooms(data));
+  }, []);
+  useEffect(() => {
+    const bookingService = new BookingService();
+    bookingService.getBookings().then((data) => setBookings(data));
   }, []);
 
   const applyLightTheme = () => {
@@ -121,9 +120,8 @@ const Dashboard = () => {
     }
   }, [layoutConfig.colorScheme]);
 
-  console.log(rooms);
-
   const availableRooms = [...rooms].filter((room) => room.isAvailable === true);
+  console.log(bookings);
 
   return (
     <div className="grid">
@@ -208,32 +206,36 @@ const Dashboard = () => {
         <div className="card">
           <h5>Recent Sales</h5>
           <DataTable
-            value={products}
+            value={bookings}
             rows={5}
             paginator
             responsiveLayout="scroll"
           >
             <Column
-              header="Image"
+              header="ID"
               body={(data) => (
-                <img
-                  className="shadow-2"
-                  src={`${contextPath}/demo/images/product/${data.image}`}
-                  alt={data.image}
-                  width="50"
-                />
+                <span className="text-900 font-medium">{data._id}</span>
               )}
             />
             <Column
               field="name"
               header="Name"
-              sortable
+              body={(data) => (
+                <span className="text-900 font-medium">
+                  {data.user.first_name} {data.user.last_name}
+                </span>
+              )}
               style={{ width: '35%' }}
             />
             <Column
               field="price"
               header="Price"
               sortable
+              body={(data) => (
+                <span className="text-900 font-medium">
+                  {data.user.phone_number}
+                </span>
+              )}
               style={{ width: '35%' }}
             />
             <Column
@@ -478,30 +480,6 @@ const Dashboard = () => {
               </span>
             </li>
           </ul>
-        </div>
-        <div
-          className="px-4 py-5 shadow-2 flex flex-column md:flex-row md:align-items-center justify-content-between mb-3"
-          style={{
-            borderRadius: '1rem',
-            background:
-              'linear-gradient(0deg, rgba(0, 123, 255, 0.5), rgba(0, 123, 255, 0.5)), linear-gradient(92.54deg, #1C80CF 47.88%, #FFFFFF 100.01%)',
-          }}
-        >
-          <div>
-            <div className="text-blue-100 font-medium text-xl mt-2 mb-3">
-              TAKE THE NEXT STEP
-            </div>
-            <div className="text-white font-medium text-5xl">
-              Try PrimeBlocks
-            </div>
-          </div>
-          <div className="mt-4 mr-auto md:mt-0 md:mr-0">
-            <Link href="https://www.primefaces.org/primeblocks-react">
-              <a className="p-button font-bold px-5 py-3 p-button-warning p-button-rounded p-button-raised">
-                Get Started
-              </a>
-            </Link>
-          </div>
         </div>
       </div>
     </div>
