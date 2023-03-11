@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export class BookingService {
   getBookings = async () => {
@@ -11,7 +11,7 @@ export class BookingService {
       throw new Error(error.response.data.message);
     }
   };
-  
+
   createBooking = async (bookingData) => {
     try {
       const res = await axios.post(`${API_URL}/booking`, bookingData);

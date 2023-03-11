@@ -1,4 +1,3 @@
-import getConfig from 'next/config';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import PrimeReact from 'primereact/api';
@@ -15,7 +14,6 @@ const Layout = (props) => {
     useContext(LayoutContext);
   const topbarRef = useRef(null);
   const sidebarRef = useRef(null);
-  const contextPath = getConfig().publicRuntimeConfig.contextPath;
   const router = useRouter();
   const [bindMenuOutsideClickListener, unbindMenuOutsideClickListener] =
     useEventListener({
@@ -148,11 +146,7 @@ const Layout = (props) => {
           content="https://www.primefaces.org/static/social/sakai-nextjs.png"
         ></meta>
         <meta property="og:ttl" content="604800"></meta>
-        <link
-          rel="icon"
-          href={`${contextPath}/favicon.ico`}
-          type="image/x-icon"
-        ></link>
+        <link rel="icon" href={`/favicon.ico`} type="image/x-icon"></link>
       </Head>
 
       <div className={containerClass}>

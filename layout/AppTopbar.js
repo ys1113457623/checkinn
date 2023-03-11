@@ -1,4 +1,3 @@
-import getConfig from 'next/config';
 import Link from 'next/link';
 import { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
 import { LayoutContext } from './context/layoutcontext';
@@ -9,7 +8,6 @@ const AppTopbar = forwardRef((props, ref) => {
   const menubuttonRef = useRef(null);
   const topbarmenuRef = useRef(null);
   const topbarmenubuttonRef = useRef(null);
-  const contextPath = getConfig().publicRuntimeConfig.contextPath;
 
   useImperativeHandle(ref, () => ({
     menubutton: menubuttonRef.current,

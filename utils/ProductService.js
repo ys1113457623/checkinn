@@ -1,12 +1,10 @@
-import getConfig from 'next/config';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export class ProductService {
-  constructor() {
-    this.contextPath = getConfig().publicRuntimeConfig.contextPath;
-  }
+  constructor() {}
 
   getProductsSmall() {
-    return fetch(this.contextPath + '/demo/data/products-small.json', {
+    return fetch('/demo/data/products-small.json', {
       headers: { 'Cache-Control': 'no-cache' },
     })
       .then((res) => res.json())
@@ -15,7 +13,7 @@ export class ProductService {
 
   getProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/product/');
+      const response = await fetch(`${BASE_URL}/api/product/`);
       const json = await response.json();
 
       return json;
@@ -25,7 +23,7 @@ export class ProductService {
   };
 
   getProductsWithOrdersSmall() {
-    return fetch(this.contextPath + '/demo/data/products-orders-small.json', {
+    return fetch('/demo/data/products-orders-small.json', {
       headers: { 'Cache-Control': 'no-cache' },
     })
       .then((res) => res.json())

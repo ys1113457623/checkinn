@@ -1,19 +1,9 @@
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 export class RoomService {
-  //   constructor() {
-  //     this.contextPath = getConfig().publicRuntimeConfig.contextPath;
-  //   }
-
-  //   getProductsSmall() {
-  //     return fetch(this.contextPath + '/demo/data/products-small.json', {
-  //       headers: { 'Cache-Control': 'no-cache' },
-  //     })
-  //       .then((res) => res.json())
-  //       .then((d) => d.data);
-  //   }
-
   getRooms = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/rooms/');
+      const response = await fetch(`${BASE_URL}/api/rooms/`);
       const json = await response.json();
 
       return json;

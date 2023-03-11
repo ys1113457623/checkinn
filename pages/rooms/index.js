@@ -1,7 +1,6 @@
 import { ProductService } from '@/utils/ProductService';
 import { RoomService } from '@/utils/RoomService';
 
-import getConfig from 'next/config';
 import { Button } from 'primereact/button';
 import { Calendar } from 'primereact/calendar';
 
@@ -68,7 +67,6 @@ const RoomManager = () => {
   const [sortField, setSortField] = useState(null);
   const [sortKey, setSortKey] = useState(null);
   const [globalFilterValue, setGlobalFilterValue] = useState('');
-  const contextPath = getConfig().publicRuntimeConfig.contextPath;
 
   const [dialogVisible, setDialogVisible] = useState(false);
 
@@ -403,7 +401,7 @@ const RoomManager = () => {
       <div className="col-12">
         <div className="flex flex-column md:flex-row align-items-center p-3 w-full">
           <img
-            src={`${contextPath}/demo/images/product/bamboo-watch.jpg`}
+            src={`/demo/images/product/bamboo-watch.jpg`}
             alt={data.name}
             className="my-4 md:my-0 w-9 md:w-10rem shadow-2 mr-5"
           />
@@ -462,7 +460,7 @@ const RoomManager = () => {
           <div class="max-w-xs rounded overflow-hidden shadow-lg">
             <img
               class="w-full"
-              src={`${contextPath}/demo/images/product/bamboo-watch.jpg`}
+              src={`/demo/images/product/bamboo-watch.jpg`}
               alt="Sunset in the mountains"
             />
             <span
@@ -485,8 +483,11 @@ const RoomManager = () => {
               </div>
               <div className="flex flex-row flex-wrap">
                 {data.amenities.length !== 0 ? (
-                  data.amenities.map((amenity) => (
-                    <span className="p-tag p-tag-rounded p-tag-info m-1">
+                  data.amenities.map((amenity, index) => (
+                    <span
+                      key={index}
+                      className="p-tag p-tag-rounded p-tag-info m-1"
+                    >
                       {amenity}
                     </span>
                   ))

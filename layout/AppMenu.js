@@ -1,4 +1,3 @@
-import getConfig from 'next/config';
 import { useContext } from 'react';
 import AppMenuitem from './AppMenuitem';
 import { LayoutContext } from './context/layoutcontext';
@@ -6,7 +5,7 @@ import { MenuProvider } from './context/menucontext';
 
 const AppMenu = () => {
   const { layoutConfig } = useContext(LayoutContext);
-  const contextPath = getConfig().publicRuntimeConfig.contextPath;
+
   const model = [
     {
       label: 'Home',

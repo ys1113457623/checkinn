@@ -1,5 +1,3 @@
-import getConfig from 'next/config';
-
 import { ProductService } from '@/utils/ProductService';
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
@@ -57,7 +55,6 @@ const Crud = () => {
   const [globalFilter, setGlobalFilter] = useState(null);
   const toast = useRef(null);
   const dt = useRef(null);
-  const contextPath = getConfig().publicRuntimeConfig.contextPath;
 
   // const [image, setImage] = useState(null);
 
@@ -106,8 +103,7 @@ const Crud = () => {
         _products.push(_product);
         console.log(_product);
         await addUser(_product);
-        // Axios.post('http://localhost:3000/api/product', _product,{"Accept":"application/json, text/plain, /","Content-Type": "multipart/form-data"}
-        // )
+
         toast.current.show({
           severity: 'success',
           summary: 'Successful',
@@ -444,7 +440,7 @@ const Crud = () => {
           >
             {product.image && (
               <img
-                src={`${contextPath}/demo/images/product/${product.image}`}
+                src={`/demo/images/product/${product.image}`}
                 alt={product.image}
                 width="150"
                 className="mt-0 mx-auto mb-5 block shadow-2"
