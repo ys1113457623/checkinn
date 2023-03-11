@@ -204,7 +204,7 @@ const Dashboard = () => {
 
       <div className="col-12 xl:col-6">
         <div className="card">
-          <h5>Recent Sales</h5>
+          <h5>Recent Booking</h5>
           <DataTable
             value={bookings}
             rows={5}
