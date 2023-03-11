@@ -1,65 +1,29 @@
 const mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-const productSchema = new Schema({
+const Schema = mongoose.Schema;
 
-
-    room_id:{
-        type: String,
-        required: true,
-    },
-    room_number:{
-        type: String,
-        required: true,
-    },
-    guest_name:{
-        type: String,
-        required: true,
-    },
-    guest_email:{
-        type: String,
-        required: true,
-    },
-    guest_phone:{
-        type: String,
-        required: true,
-    },
-    number_of_guests:{
-        type: Number,
-        required: true,
-    },
-    last_name:{
-        type: String,
-        required: true,
-    },
-    phone_number:{
-        type: Number,
-        required: true,
-    },
-    address:{
-        type: String,
-        required: true,
-    },
-    country:{
-        type: String,
-        required: true,
-    },
-    city:{
-        type: String,
-        required: true,
-    },
-    pincode:{
-        type: Number,
-        required: true,
-    },
-
-
-
-
-
-
+const bookingSchema = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  room: {
+    type: Schema.Types.ObjectId,
+    ref: 'Room',
+    required: true,
+  },
+  checkIn: {
+    type: Date,
+    required: true,
+  },
+  checkOut: {
+    type: Date,
+    required: true,
+  },
+  totalPrice: {
+    type: Number,
+    required: true,
+  },
 });
 
-productSchema.set('timestamp', true)
-
-
-module.exports = mongoose.models.Guests || mongoose.model('Guests', productSchema);
+module.exports = mongoose.model('Booking', bookingSchema);

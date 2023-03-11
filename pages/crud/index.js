@@ -280,20 +280,11 @@ const Crud = () => {
     );
   };
 
-  // const imageBodyTemplate = (rowData) => {
-  //     return (
-  //         <>
-  //             <span className="p-column-title">Image</span>
-  //             <img src={`${contextPath}/demo/images/product/${rowData.image}`} alt={rowData.image} className="shadow-2" width="100" />
-  //         </>
-  //     );
-  // };
-
   const priceBodyTemplate = (rowData) => {
     return (
       <>
         <span className="p-column-title">Price</span>
-        {rowData.id}
+        {rowData.country}
       </>
     );
   };
@@ -346,7 +337,7 @@ const Crud = () => {
 
   const header = (
     <div className="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-      <h5 className="m-0">Manage Products</h5>
+      <h5 className="m-0">Manage Guests</h5>
       <span className="block mt-2 md:mt-0 p-input-icon-left">
         <i className="pi pi-search" />
         <InputText
@@ -450,22 +441,22 @@ const Crud = () => {
             ></Column>
             {/* <Column header="Image" body={imageBodyTemplate}></Column> */}
             <Column
-              field="price"
-              header="Price"
+              field="gender"
+              header="Gender"
               body={priceBodyTemplate}
               sortable
             ></Column>
             <Column
-              field="category"
-              header="Category"
+              field="phoneNumber"
+              header="Phone Number"
               sortable
               body={categoryBodyTemplate}
               headerStyle={{ minWidth: '10rem' }}
             ></Column>
             {/* <Column field="rating" header="Reviews" body={ratingBodyTemplate} sortable></Column> */}
             <Column
-              field="inventoryStatus"
-              header="Status"
+              field="address"
+              header="Address"
               body={statusBodyTemplate}
               sortable
               headerStyle={{ minWidth: '10rem' }}

@@ -19,6 +19,11 @@ const AppMenu = () => {
       to: '/pages',
       items: [
         {
+          label: 'Rooms',
+          icon: 'pi pi-fw pi-pencil',
+          to: '/rooms',
+        },
+        {
           label: 'Add Guest',
           icon: 'pi pi-fw pi-pencil',
           to: '/crud',

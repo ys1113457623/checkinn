@@ -24,25 +24,6 @@ export class ProductService {
     }
   };
 
-  // async getProducts() {
-  //     console.log('getProducts')
-  //     var a = fetch('http://localhost:3001/api/product/', { headers: { 'Cache-Control': 'no-cache' } })
-  //         // .then((res) => res.json())
-  //         // .then((d) => d.data);
-  //         console.log(a.id)
-  //     try{
-  //         return fetch('http://localhost:3001/api/product/', { headers: { 'Cache-Control': 'no-cache' } })
-  //         .then((res) => res.json())
-  //         .then((d) => d.data);
-
-  //     }catch(e){
-  //         console.log(e)
-  //     }
-
-  //     console.log('done')
-
-  // }
-
   getProductsWithOrdersSmall() {
     return fetch(this.contextPath + '/demo/data/products-orders-small.json', {
       headers: { 'Cache-Control': 'no-cache' },

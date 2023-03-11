@@ -126,7 +126,7 @@ const Layout = (props) => {
   return (
     <React.Fragment>
       <Head>
-        <title>Sakai by PrimeReact | Free Admin Template for NextJS</title>
+        <title>CheckINN</title>
         <meta charSet="UTF-8" />
         <meta
           name="description"
@@ -135,10 +135,7 @@ const Layout = (props) => {
         <meta name="robots" content="index, follow" />
         <meta name="viewport" content="initial-scale=1, width=device-width" />
         <meta property="og:type" content="website"></meta>
-        <meta
-          property="og:title"
-          content="Sakai by PrimeReact | Free Admin Template for NextJS"
-        ></meta>
+        <meta property="og:title" content="CheckINN"></meta>
         <meta
           property="og:url"
           content="https://www.primefaces.org/sakai-react"
