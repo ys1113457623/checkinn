@@ -3,7 +3,7 @@
 ### Fully Resposivce
 
 This project is a Hotel Management System that has been built using Next.js, TailwindCSS, Sass, Next-Connect, and Primereact.
-![Example Image](checkinn.png 'This is an example image')
+![Example Image](CheckINN.png 'This is an example image')
 
 ## Features
 
