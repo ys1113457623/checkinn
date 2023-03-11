@@ -5,7 +5,6 @@ import PrimeReact from 'primereact/api';
 import { useEventListener, useUnmountEffect } from 'primereact/hooks';
 import { classNames, DomHandler } from 'primereact/utils';
 import React, { useContext, useEffect, useRef } from 'react';
-import AppConfig from './AppConfig';
 import AppFooter from './AppFooter';
 import AppSidebar from './AppSidebar';
 import AppTopbar from './AppTopbar';
@@ -165,7 +164,6 @@ const Layout = (props) => {
           <div className="layout-main">{props.children}</div>
           <AppFooter />
         </div>
-        <AppConfig />
         <div className="layout-mask"></div>
       </div>
     </React.Fragment>

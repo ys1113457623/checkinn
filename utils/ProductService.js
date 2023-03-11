@@ -15,7 +15,7 @@ export class ProductService {
 
   getProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/product/');
+      const response = await fetch('http://localhost:3001/api/product/');
       const json = await response.json();
 
       return json;

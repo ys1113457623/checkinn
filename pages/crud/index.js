@@ -6,7 +6,6 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Dialog } from 'primereact/dialog';
-import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Rating } from 'primereact/rating';
@@ -241,27 +240,6 @@ const Crud = () => {
     );
   };
 
-  const rightToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        <FileUpload
-          mode="basic"
-          accept="image/*"
-          maxFileSize={1000000}
-          label="Import"
-          chooseLabel="Import"
-          className="mr-2 inline-block"
-        />
-        <Button
-          label="Export"
-          icon="pi pi-upload"
-          className="p-button-help"
-          onClick={exportCSV}
-        />
-      </React.Fragment>
-    );
-  };
-
   const codeBodyTemplate = (rowData) => {
     return (
       <>
@@ -404,11 +382,7 @@ const Crud = () => {
         <div className="card">
           <Toast ref={toast} />
           {/* New Product And Delete Product */}
-          <Toolbar
-            className="mb-4"
-            left={leftToolbarTemplate}
-            right={rightToolbarTemplate}
-          ></Toolbar>
+          <Toolbar className="mb-4" right={leftToolbarTemplate}></Toolbar>
 
           <DataTable
             ref={dt}
@@ -455,8 +429,8 @@ const Crud = () => {
             ></Column>
             {/* <Column field="rating" header="Reviews" body={ratingBodyTemplate} sortable></Column> */}
             <Column
-              field="address"
-              header="Address"
+              field="inventoryStatus"
+              header="Status"
               body={statusBodyTemplate}
               sortable
               headerStyle={{ minWidth: '10rem' }}

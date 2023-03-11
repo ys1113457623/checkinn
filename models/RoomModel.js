@@ -33,4 +33,6 @@ const roomSchema = new Schema({
   ],
 });
 
+roomSchema.set('timestamp', true);
+
 module.exports = mongoose.models.Room || mongoose.model('Room', roomSchema);

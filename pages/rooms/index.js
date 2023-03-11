@@ -12,7 +12,7 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { classNames } from 'primereact/utils';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const RoomManager = () => {
   const listValue = [
@@ -52,6 +52,7 @@ const RoomManager = () => {
   const [sortKey, setSortKey] = useState(null);
   const [globalFilterValue, setGlobalFilterValue] = useState('');
   const contextPath = getConfig().publicRuntimeConfig.contextPath;
+  const dt = useRef(null);
 
   const sortOptions = [
     { label: 'Price High to Low', value: '!price' },
