@@ -1,6 +1,10 @@
+import { ProductService } from '@/utils/ProductService';
 import { RoomService } from '@/utils/RoomService';
+
 import getConfig from 'next/config';
 import { Button } from 'primereact/button';
+import { Calendar } from 'primereact/calendar';
+
 import { DataView, DataViewLayoutOptions } from 'primereact/dataview';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
@@ -9,9 +13,11 @@ import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
 import { MultiSelect } from 'primereact/multiselect';
 import { Toolbar } from 'primereact/toolbar';
+import { addRoom } from '../api/product/helper';
 
 import { classNames } from 'primereact/utils';
 
+import BookingsList from '@/components/BookingList';
 import React, { useEffect, useRef, useState } from 'react';
 
 const RoomManager = () => {
@@ -32,11 +38,29 @@ const RoomManager = () => {
     amenities: [],
     bookings: [],
   };
+  let emptyBooking = {
+    user: null,
+    room: null,
+    checkIn: Date.now(),
+    checkOut: null,
+    totalPrice: 0,
+  };
 
-  const [rooms, setRooms] = useState('');
+  const [rooms, setRooms] = useState([]);
 
   const [dropdownValue, setDropdownValue] = useState(null);
   const [roomType, setRoomType] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedRoomType, setSelectedRoomType] = useState('');
+  const [selectedRoomNumber, setSelectedRoomNumber] = useState('');
+
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [selectedUser2, setSelectedUser2] = useState(null);
+  const [roomNumber, setRoomNumber] = useState(''); // set initial value to '123'
+  const [checkInValue, setCheckInValue] = useState(null);
+  const [checkOutValue, setCheckOutValue] = useState(null);
+  const [booking, setBooking] = useState(emptyBooking);
 
   const [filteredValue, setFilteredValue] = useState(null);
   const [room, setRoom] = useState(emptyRoom);
@@ -53,6 +77,27 @@ const RoomManager = () => {
   const [globalFilterValue, setGlobalFilterValue] = useState('');
   const contextPath = getConfig().publicRuntimeConfig.contextPath;
   const dt = useRef(null);
+  const toast = useRef(null);
+  const [dialogVisible, setDialogVisible] = useState(false);
+
+  const handleItemClick = (data) => {
+    setDialogVisible(!dialogVisible);
+  };
+
+  function getRandomRoomNumber() {
+    const filteredRooms = rooms.filter(
+      (room) => room.roomType === selectedRoomType && room.isAvailable
+    );
+    const randomIndex = Math.floor(Math.random() * filteredRooms.length);
+    return filteredRooms[randomIndex]?.roomNumber;
+  }
+
+  const footer = (
+    <div>
+      <Button label="Cancel" icon="pi pi-times" onClick={handleItemClick} />
+      <Button label="Book" icon="pi pi-check" onClick={handleItemClick} />
+    </div>
+  );
 
   const sortOptions = [
     { label: 'Price High to Low', value: '!price' },
@@ -64,6 +109,17 @@ const RoomManager = () => {
     { name: 'Triple' },
     { name: 'Suite' },
   ];
+  const [value, setValue] = useState(0);
+
+  const currencyFormatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'IND',
+    minimumFractionDigits: 2,
+  });
+
+  const currencyParser = (value) => {
+    return value.replace(/[^\d]/g, '');
+  };
   const multiselectValues = [{ name: 'Wifi' }, { name: 'AC' }, { name: 'TV' }];
   const exportCSV = () => {
     dt.current.exportCSV();
@@ -85,48 +141,104 @@ const RoomManager = () => {
     setRoomDialog(false);
   };
 
+  const createId = () => {
+    let id = '';
+    let chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 5; i++) {
+      id += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return id;
+  };
+
+  const findIndexById = (id) => {
+    let index = -1;
+    for (let i = 0; i < rooms.length; i++) {
+      if (rooms[i].id === id) {
+        index = i;
+        break;
+      }
+    }
+
+    return index;
+  };
+  const updateRoom = async (updatedRoom) => {
+    try {
+      // Update room in database
+      await Axios.put(`/api/rooms/${updatedRoom._id}`, updatedRoom);
+
+      // Update room in state
+      setRooms((prevRooms) =>
+        prevRooms.map((room) => {
+          if (room._id === updatedRoom._id) {
+            return updatedRoom;
+          } else {
+            return room;
+          }
+        })
+      );
+
+      console.log('Room updated successfully');
+    } catch (error) {
+      console.error('Error updating room:', error);
+    }
+  };
   const saveRoom = async () => {
     setSubmitted(true);
-    multiselectValue = multiselectValue.map((item) => item.name);
-    room.amenities = multiselectValue;
-    console.log(JSON.stringify(room));
-    // if (room.roomNumber.trim()) {
-    //   let _products = [...rooms];
-    //   let _product = { ...room };
-    //   if (room.id) {
-    //     const index = findIndexById(room.id);
 
-    //     _products[index] = _product;
-    //     toast.current.show({
-    //       severity: 'success',
-    //       summary: 'Successful',
-    //       detail: 'Product Updated',
-    //       life: 3000,
-    //     });
-    //   } else {
-    //     _product.id = createId();
-    //     _products.push(_product);
-    //     console.log(_product);
-    //     await addUser(_product);
-    //     // Axios.post('http://localhost:3000/api/product', _product,{"Accept":"application/json, text/plain, /","Content-Type": "multipart/form-data"}
-    //     // )
-    //     toast.current.show({
-    //       severity: 'success',
-    //       summary: 'Successful',
-    //       detail: 'Product Created',
-    //       life: 3000,
-    //     });
-    //   }
+    if (
+      room.roomNumber &&
+      rooms.some((r) => r.roomNumber === room.roomNumber)
+    ) {
+      // Room with this roomNumber already exists, update it
+      const updatedRooms = rooms.map((r) =>
+        r.roomNumber === room.roomNumber ? room : r
+      );
+      await updateRoom(room._id, room);
+      setRooms(updatedRooms);
+    } else {
+      // Room doesn't exist, create a new one
+      const newRoom = { ...room, id: createId() };
+      const names = multiselectValue.map((item) => item.name);
+      newRoom.amenities = names;
+      await addRoom(newRoom);
+      setRooms([...rooms, newRoom]);
+    }
 
-    //   setRooms(_products);
-    //   setProductDialog(false);
-    //   setRoom(emptyProduct);
-    // }
+    setRoomDialog(false);
+    setRoom(emptyRoom);
+  };
+  const saveBooking = async () => {
+    setSubmitted(true);
+
+    if (
+      room.roomNumber &&
+      rooms.some((r) => r.roomNumber === room.roomNumber)
+    ) {
+      // Room with this roomNumber already exists, update it
+      const updatedRooms = rooms.map((r) =>
+        r.roomNumber === room.roomNumber ? room : r
+      );
+      await updateRoom(room._id, room);
+      setRooms(updatedRooms);
+    } else {
+      // Room doesn't exist, create a new one
+      const newRoom = { ...room, id: createId() };
+      const names = multiselectValue.map((item) => item.name);
+      newRoom.amenities = names;
+      await addRoom(newRoom);
+      setRooms([...rooms, newRoom]);
+    }
+
+    setRoomDialog(false);
+    setRoom(emptyRoom);
   };
 
   useEffect(() => {
     const roomService = new RoomService();
+    const productService = new ProductService();
     roomService.getRooms().then((data) => setRooms(data));
+    productService.getProducts().then((data) => setUsers(data));
     setGlobalFilterValue('');
   }, []);
 
@@ -202,9 +314,15 @@ const RoomManager = () => {
           <Button
             label="Delete"
             icon="pi pi-trash"
-            className="p-button-danger"
+            className="p-button-danger mr-2"
             onClick={confirmDeleteSelected}
             disabled={!selectedRooms || !selectedRooms.length}
+          />
+          <Button
+            label="Delete"
+            className="p-button-danger mr-2"
+            onClick={() => handleItemClick()}
+            icon="pi pi-shopping-cart"
           />
         </div>
       </React.Fragment>
@@ -247,7 +365,7 @@ const RoomManager = () => {
   // Function to handle adding a new room
   // const handleAddRoom = () => {
   //   axios
-  //     .post('http://localhost:3001/api/rooms', {
+  //     .post('http://localhost:3000/api/rooms', {
   //       roomNumber,
   //       roomType,
   //       price,
@@ -305,7 +423,7 @@ const RoomManager = () => {
         <InputText
           value={globalFilterValue}
           onChange={onFilter}
-          placeholder="Search by Name"
+          placeholder="Search by Room Number"
         />
       </span>
       <DataViewLayoutOptions
@@ -318,7 +436,7 @@ const RoomManager = () => {
   // Function to handle deleting a room
   // const handleDeleteRoom = (id) => {
   //   axios
-  //     .delete(`http://localhost:3001/api/rooms/?id=${id}`)
+  //     .delete(`http://localhost:3000/api/rooms/?id=${id}`)
   //     .then(() => {
   //       setRooms(rooms.filter((room) => room._id !== id));
   //     })
@@ -347,11 +465,15 @@ const RoomManager = () => {
               className="mb-2"
             ></Rating> */}
             <div className="flex flex-row flex-wrap">
-              {data.amenities.map((amenity) => (
-                <span className="p-tag p-tag-rounded p-tag-info m-1">
-                  {amenity}
-                </span>
-              ))}
+              {data.amenities.length !== 0 ? (
+                data.amenities.map((amenity) => (
+                  <span className="p-tag p-tag-rounded p-tag-info m-1">
+                    {amenity}
+                  </span>
+                ))
+              ) : (
+                <span className="p-tag p-tag-rounded p-tag-info m-1">No</span>
+              )}
             </div>
             {/* <div className="flex align-items-center">
               <span className="font-semibold">{data.amenities}</span>
@@ -404,18 +526,24 @@ const RoomManager = () => {
                 {data.roomType} Room
               </div>
               <div className="flex flex-row flex-wrap">
-                {data.amenities.map((amenity) => (
-                  <span className="p-tag p-tag-rounded p-tag-info m-1">
-                    {amenity}
-                  </span>
-                ))}
+                {data.amenities.length !== 0 ? (
+                  data.amenities.map((amenity) => (
+                    <span className="p-tag p-tag-rounded p-tag-info m-1">
+                      {amenity}
+                    </span>
+                  ))
+                ) : (
+                  <span className="p-tag p-tag-rounded p-tag-info m-1">No</span>
+                )}
               </div>
               <div className="flex align-items-center justify-content-between">
                 <span className="text-2xl font-semibold">₹ {data.price}</span>
-                <Button
+
+                {/* <Button
+                  onClick={console.log(data)}
                   icon="pi pi-shopping-cart"
-                  disabled={data.isAvailable === false}
-                />
+                  disabled={!data.isAvailable}
+                /> */}
               </div>
             </div>
           </div>
@@ -511,6 +639,143 @@ const RoomManager = () => {
                   onInputNumberChange(e, 'price');
                 }}
               />
+            </div>
+          </Dialog>
+          <Dialog
+            style={{ width: '450px', height: 'auto' }}
+            modal
+            className="p-fluid"
+            visible={dialogVisible}
+            footer={footer}
+            header="Booking"
+            onHide={() => setDialogVisible(false)}
+          >
+            <div style={{ position: 'relative' }}>
+              <div className="p-fluid border-0">
+                <div className="field">
+                  <label htmlFor="selectUser ">Select User</label>
+                  <Dropdown
+                    options={users.map((user) => ({
+                      name: user.first_name + ' ' + user.last_name,
+                    }))}
+                    value={selectedUser2}
+                    onChange={(e) => {
+                      setSelectedUser2(e.value);
+                      setSelectedUser(
+                        users.filter(
+                          (user) =>
+                            user.first_name + ' ' + user.last_name ===
+                            e.value.name
+                        )[0]
+                      );
+                    }}
+                    optionLabel="name"
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="roomType">Room Type</label>
+                  <Dropdown
+                    value={dropdownValue}
+                    onSelectCapture={(e) => {
+                      setRoomNumber(getRandomRoomNumber());
+                    }}
+                    onClick={(e) => {
+                      setRoomNumber(getRandomRoomNumber());
+                    }}
+                    onChange={(e) => {
+                      console.log(typeof e.target.value.name);
+                      setSelectedRoomType(e.value.name);
+                      setDropdownValue(e.value);
+                    }}
+                    options={dropdownValues}
+                    optionLabel="name"
+                    placeholder="Select"
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="roomType">Room Number</label>
+                  <InputText
+                    value={roomNumber}
+                    onChange={(e) => setRoomNumber(e.target.value)}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="name">Check In </label>
+                  <Calendar
+                    showIcon
+                    showButtonBar
+                    value={checkInValue}
+                    hourFormat="12"
+                    showTime={true}
+                    onChange={(e) => setCheckInValue(e.value)}
+                  ></Calendar>
+                </div>
+                <div className="field">
+                  <label htmlFor="quantity">Check Out</label>
+                  <Calendar
+                    showIcon
+                    showButtonBar
+                    value={checkOutValue}
+                    onChange={(e) => {
+                      setValue(
+                        ((checkOutValue - checkInValue) / (1000 * 60 * 60)) *
+                          rooms.filter(
+                            (room) => room.roomNumber === roomNumber
+                          )[0].price
+                      );
+                      setCheckOutValue(e.value);
+                    }}
+                    showTime={true}
+                    hourFormat="12"
+                  />
+
+                  {/* <Calendar
+                      showIcon
+                      showButtonBar
+                      showTime={true}
+                      hourFormat="24"
+                      dateFormat="dd/mm/yy"
+                      value={checkOutValue}
+                      timeOnly={true}
+                      onChange={(e) => setCheckOutValue(e.value)}
+                    ></Calendar> */}
+                </div>
+              </div>
+              <div className="p-field">
+                <label htmlFor="currencyInput">Enter Amount</label>
+                <span className="p-input-icon-left">
+                  <InputNumber
+                    value={value}
+                    onValueChange={(e) => setValue(e.value)}
+                    showButtons
+                    mode="currency"
+                    currency="INR"
+                    minFractionDigits={2}
+                    format={currencyFormatter}
+                    parse={currencyParser}
+                  ></InputNumber>
+
+                  {/* <InputNumber
+                    id="currencyInput"
+                    value={value}
+                    onValueChange={(e) => setValue(e.value)}
+                    mode="currency"
+                    currency="INR"
+                    locale="en-US"
+                    placeholder="$0.00"
+                    minFractionDigits={2}
+                    showButtons
+                    buttonLayout="horizontal"
+                    suffix=".00"
+                    decimalSeparator="."
+                    thousandSeparator=","
+                    className="p-inputtext-lg"
+                    format={currencyFormatter}
+                    parse={currencyParser}
+                  /> */}
+                </span>
+              </div>
+              <BookingsList />
             </div>
           </Dialog>
         </div>

@@ -8,6 +8,8 @@ import { Menu } from 'primereact/menu';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { LayoutContext } from '../layout/context/layoutcontext';
 import { ProductService } from '../utils/ProductService';
+import { RoomService } from '../utils/RoomService';
+
 const lineData = {
   labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
   datasets: [
@@ -31,12 +33,21 @@ const lineData = {
 };
 
 const Dashboard = () => {
-  const [products, setProducts] = useState(null);
+  const [products, setProducts] = useState('');
+  const [rooms, setRooms] = useState('');
   const menu1 = useRef(null);
   const menu2 = useRef(null);
   const [lineOptions, setLineOptions] = useState(null);
   const { layoutConfig } = useContext(LayoutContext);
   const contextPath = getConfig().publicRuntimeConfig.contextPath;
+  useEffect(() => {
+    const productService = new ProductService();
+    productService.getProducts().then((data) => setProducts(data));
+  }, []);
+  useEffect(() => {
+    const roomService = new RoomService();
+    roomService.getRooms().then((data) => setRooms(data));
+  }, []);
 
   const applyLightTheme = () => {
     const lineOptions = {
@@ -103,11 +114,6 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const productService = new ProductService();
-    productService.getProductsSmall().then((data) => setProducts(data));
-  }, []);
-
-  useEffect(() => {
     if (layoutConfig.colorScheme === 'light') {
       applyLightTheme();
     } else {
@@ -115,12 +121,9 @@ const Dashboard = () => {
     }
   }, [layoutConfig.colorScheme]);
 
-  const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    });
-  };
+  console.log(rooms);
+
+  const availableRooms = [...rooms].filter((room) => room.isAvailable === true);
 
   return (
     <div className="grid">
@@ -128,8 +131,12 @@ const Dashboard = () => {
         <div className="card mb-0">
           <div className="flex justify-content-between mb-3">
             <div>
-              <span className="block text-500 font-medium mb-3">Orders</span>
-              <div className="text-900 font-medium text-xl">152</div>
+              <span className="block text-500 font-medium mb-3">
+                Rooms Available
+              </span>
+              <div className="text-900 font-medium text-xl">
+                {availableRooms.length}
+              </div>
             </div>
             <div
               className="flex align-items-center justify-content-center bg-blue-100 border-round"
@@ -228,7 +235,6 @@ const Dashboard = () => {
               header="Price"
               sortable
               style={{ width: '35%' }}
-              body={(data) => formatCurrency(data.price)}
             />
             <Column
               header="View"
